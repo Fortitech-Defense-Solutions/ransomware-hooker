@@ -46,6 +46,7 @@
     <IncludePath>..\ransomware-hooker\EasyHook-2.7.6789.0-Binaries\NetFX4.0;$(IncludePath)</IncludePath>
     <ExternalIncludePath>..\ransomware-hooker\EasyHook-2.7.6789.0-Binaries\NetFX4.0;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>..\ransomware-hooker\packages\EasyHookNativePackage.2.7.6270\build\native\lib\Win32\v140\Debug;..\ransomware-hooker\EasyHook-2.7.6789.0-Binaries\NetFX4.0;$(LibraryPath)</LibraryPath>
+    <LibraryWPath>..\ransomware-hooker\EasyHook-2.7.6789.0-Binaries\NetFX4.0;$(LibraryWPath)</LibraryWPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>

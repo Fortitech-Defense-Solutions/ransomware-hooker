@@ -19,7 +19,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	std::cout << "Enter a frequency offset in hertz (e.g. 800): ";
 	std::cin >> freqOffset;
 
-	WCHAR* dllToInject = L"..\\Debug\\BeepHook.dll";
+	WCHAR* dllToInject = L"..\\Debug\\Hooker.dll";
 	wprintf(L"Attempting to inject: %s\n\n", dllToInject);
 	
 	// Inject dllToInject into the target process Id, passing 
