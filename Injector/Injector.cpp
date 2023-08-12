@@ -1,16 +1,25 @@
-// Injector.cpp : Defines the entry point for the console application.
-//
-
 #include "stdafx.h"
-
 #include <iostream>
 #include <string>
 #include <cstring>
-
 #include <easyhook.h>
+#include "innithook.h"
+#include <thread>
+
+void MonitorarProcessos() {
+	while (true) {
+		innithook(); // Chama a função innithook para atualizar a lista global de processos
+
+		// Aguarde um pouco antes de verificar novamente
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		//deletepid () 
+	}
+}
 
 int _tmain(int argc, _TCHAR* argv[])
+
 {
+	MonitorarProcessos();
 	DWORD processId;
 	std::wcout << "Enter the target process Id: ";
 	std::cin >> processId;
@@ -22,16 +31,16 @@ int _tmain(int argc, _TCHAR* argv[])
 	WCHAR* dllToInject = L"..\\Debug\\Hooker.dll";
 	wprintf(L"Attempting to inject: %s\n\n", dllToInject);
 	
-	// Inject dllToInject into the target process Id, passing 
-	// freqOffset as the pass through data.
+	// injeta a dllToInject no processid alvo 
+
 	NTSTATUS nt = RhInjectLibrary(
-		processId,   // The process to inject into
-		0,           // ThreadId to wake up upon injection
+		processId,   
+		0,           
 		EASYHOOK_INJECT_DEFAULT,
-		dllToInject, // 32-bit
-		NULL,		 // 64-bit not provided
-		&freqOffset, // data to send to injected DLL entry point
-		sizeof(DWORD)// size of data to send
+		dllToInject,
+		NULL,	
+		&freqOffset,
+		sizeof(DWORD)
 	);
 
 	if (nt != 0)
