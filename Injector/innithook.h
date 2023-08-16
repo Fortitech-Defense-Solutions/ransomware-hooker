@@ -1,2 +1,5 @@
+#include <windows.h>
+
 #pragma once
-int innithook();
+
+int makehook(DWORD processId);

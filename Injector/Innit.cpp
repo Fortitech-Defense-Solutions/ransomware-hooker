@@ -1,45 +1,40 @@
 #include "stdafx.h"
-#include <list>
 #include <iostream>
-#include <string>
-#include <cstring>
 #include <windows.h>
-#include <tlhelp32.h>
 #include <easyhook.h>
+#include <string>
 
-std::list<int> processosVistos;
+int makehook(DWORD processId) {
 
-int innithook()
-{
-    HANDLE hProcessSnap;
-    PROCESSENTRY32 pe32;
+	WCHAR* dllToInject = L".\\Hooker.dll";
+	wprintf(L"Attempting to inject: %s\n\n", dllToInject);
 
-    // Pega um snapshot de todos os processos em execução
-    hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (hProcessSnap == INVALID_HANDLE_VALUE) {
-        std::cerr << "CreateToolhelp32Snapshot falhou, código de erro: " << GetLastError() << std::endl;
-        return 1;
-    }
+	// Injeta a dllToInject no processo alvo 
+	NTSTATUS nt = RhInjectLibrary(
+		processId,
+		0,
+		EASYHOOK_INJECT_DEFAULT,
+		dllToInject,
+		NULL,
+		NULL,
+		0
+	);
 
-    // Configura o tamanho da estrutura antes de usá-la
-    pe32.dwSize = sizeof(PROCESSENTRY32);
+	if (nt != 0)
+	{
+		printf("RhInjectLibrary failed with error code = %d\n", nt);
+		PWCHAR err = RtlGetLastErrorString();
+		std::wcout << err << "\n";
+	}
+	else
+	{
+		std::wcout << L"Library injected successfully.\n";
+	}
 
-    // Recupera informações sobre o primeiro processo e sai se falhar
-    if (!Process32First(hProcessSnap, &pe32)) {
-        std::cerr << "Process32First falhou, código de erro: " << GetLastError() << std::endl;
-        CloseHandle(hProcessSnap);
-        return 1;
-    }
+	std::wcout << "Press Enter to exit";
+	std::wstring input;
+	std::getline(std::wcin, input);
+	std::getline(std::wcin, input);
 
-    // Agora, percorre a lista de processos em execução e exibe as informações
-    do {
-        if (std::find(processosVistos.begin(), processosVistos.end(), pe32.th32ProcessID) == processosVistos.end()) {
-            std::cout << "Novo processo encontrado: " << pe32.th32ProcessID << "\n";
-            processosVistos.push_back(pe32.th32ProcessID);
-        }
-    } while (Process32Next(hProcessSnap, &pe32));
-
-    CloseHandle(hProcessSnap);
-
-    return 0;
+	return 0;
 }

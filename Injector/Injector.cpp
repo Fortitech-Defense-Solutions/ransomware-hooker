@@ -1,62 +1,84 @@
 #include "stdafx.h"
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <easyhook.h>
 #include "innithook.h"
+
+#include <list>
+#include <string>
 #include <thread>
+#include <iostream>
+#include <algorithm>
 
-void MonitorarProcessos() {
-	while (true) {
-		innithook(); // Chama a função innithook para atualizar a lista global de processos
+#include <windows.h>
+#include <tlhelp32.h>
 
-		// Aguarde um pouco antes de verificar novamente
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-		//deletepid () 
-	}
-}
+int _tmain(int argc, _TCHAR* argv[]){
+    std::list<DWORD> currentProcesses;
+    std::list<DWORD> newProcesses;
 
-int _tmain(int argc, _TCHAR* argv[])
+    // Get the list of current processes
+    HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hProcessSnap == INVALID_HANDLE_VALUE) {
+        // Failed to create snapshot of processes
+        return -1;
+    }
 
-{
-	MonitorarProcessos();
-	DWORD processId;
-	std::wcout << "Enter the target process Id: ";
-	std::cin >> processId;
+    PROCESSENTRY32 pe32;
+    pe32.dwSize = sizeof(PROCESSENTRY32);
 
-	DWORD freqOffset = 0;
-	std::cout << "Enter a frequency offset in hertz (e.g. 800): ";
-	std::cin >> freqOffset;
+    if (!Process32First(hProcessSnap, &pe32)) {
+        // Failed to get first process
+        CloseHandle(hProcessSnap);
+        return -1;
+    }
 
-	WCHAR* dllToInject = L"..\\Debug\\Hooker.dll";
-	wprintf(L"Attempting to inject: %s\n\n", dllToInject);
-	
-	// injeta a dllToInject no processid alvo 
+    do {
+        currentProcesses.push_back(pe32.th32ProcessID);
+    } while (Process32Next(hProcessSnap, &pe32));
 
-	NTSTATUS nt = RhInjectLibrary(
-		processId,   
-		0,           
-		EASYHOOK_INJECT_DEFAULT,
-		dllToInject,
-		NULL,	
-		&freqOffset,
-		sizeof(DWORD)
-	);
+    CloseHandle(hProcessSnap);
 
-	if (nt != 0)
-	{
-		printf("RhInjectLibrary failed with error code = %d\n", nt);
-		PWCHAR err = RtlGetLastErrorString();
-		std::wcout << err << "\n";
-	}
-	else 
-	{
-		std::wcout << L"Library injected successfully.\n";
-	}
+    // Continuously update the list of new processes
+    while (true) {
+        hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (hProcessSnap == INVALID_HANDLE_VALUE) {
+            // Failed to create snapshot of processes
+            std::cout << "PAU 1";
+            return -1;
+        }
 
-	std::wcout << "Press Enter to exit";
-	std::wstring input;
-	std::getline(std::wcin, input);
-	std::getline(std::wcin, input);
+        pe32.dwSize = sizeof(PROCESSENTRY32);
+
+        if (!Process32First(hProcessSnap, &pe32)) {
+            // Failed to get first process
+            std::cout << "PAU";
+            CloseHandle(hProcessSnap);
+            return -1;
+        }
+
+        do {
+            if (std::find(currentProcesses.begin(), currentProcesses.end(), pe32.th32ProcessID) == currentProcesses.end()) {
+                newProcesses.push_back(pe32.th32ProcessID);
+            }
+        } while (Process32Next(hProcessSnap, &pe32));
+
+        CloseHandle(hProcessSnap);
+
+        // Print the new processes
+        for (DWORD pid : newProcesses) {
+            std::cout << "Process: " + pid;
+            makehook(pid);
+        }
+
+        // Update the current processes list
+        currentProcesses.splice(currentProcesses.end(), newProcesses);
+
+        // Wait for 1 second before checking again
+        Sleep(1000);
+    }
+
+    std::wcout << "Press Enter to exit";
+    std::wstring input;
+    std::getline(std::wcin, input);
+    std::getline(std::wcin, input);
+
 	return 0;
 }
