@@ -6,7 +6,7 @@
 
 int makehook(DWORD processId) {
 
-	WCHAR* dllToInject = L"C:\\Users\\nunes\\Source\\Repos\\Fortitech-Defense-Solutions\\ransomware-hooker\\x64\\Debug\\Hooker.dll";//L".\\Hooker.dll";
+	WCHAR* dllToInject = L".\\Hooker.dll";
 	wprintf(L"Attempting to inject: %s\n\n", dllToInject);
 
 	// Injeta a dllToInject no processo alvo 
