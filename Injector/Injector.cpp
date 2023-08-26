@@ -41,7 +41,6 @@ int _tmain(int argc, _TCHAR* argv[]){
         hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
         if (hProcessSnap == INVALID_HANDLE_VALUE) {
             // Failed to create snapshot of processes
-            std::cout << "PAU 1";
             return -1;
         }
 
@@ -49,7 +48,6 @@ int _tmain(int argc, _TCHAR* argv[]){
 
         if (!Process32First(hProcessSnap, &pe32)) {
             // Failed to get first process
-            std::cout << "PAU";
             CloseHandle(hProcessSnap);
             return -1;
         }
@@ -64,7 +62,6 @@ int _tmain(int argc, _TCHAR* argv[]){
 
         // Print the new processes
         for (DWORD pid : newProcesses) {
-            std::cout << "Process: " + pid;
             makehook(pid);
         }
 
@@ -74,11 +71,6 @@ int _tmain(int argc, _TCHAR* argv[]){
         // Wait for 1 second before checking again
         Sleep(1000);
     }
-
-    std::wcout << "Press Enter to exit";
-    std::wstring input;
-    std::getline(std::wcin, input);
-    std::getline(std::wcin, input);
 
 	return 0;
 }

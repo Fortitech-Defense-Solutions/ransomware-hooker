@@ -17,7 +17,7 @@ void beepHook() {
 	HOOK_TRACE_INFO hHook = { NULL }; // keep track of our hook
 
 	std::cout << "\n";
-	std::cout << "NativeInjectionEntryPoint: Win32 Beep found at address: " << GetProcAddress(GetModuleHandle(TEXT("kernel32")), "Beep") << "\n";
+	//std::cout << "NativeInjectionEntryPoint: Win32 Beep found at address: " << GetProcAddress(GetModuleHandle(TEXT("kernel32")), "Beep") << "\n";
 
 	// Install the hook
 	NTSTATUS result = LhInstallHook(
@@ -27,12 +27,12 @@ void beepHook() {
 		&hHook);
 	if (FAILED(result))
 	{
-		std::wstring s(RtlGetLastErrorString());
-		std::wcout << "NativeInjectionEntryPoint: Failed to install hook: " << s << "\n";
+		//std::wstring s(RtlGetLastErrorString());
+		//std::wcout << "NativeInjectionEntryPoint: Failed to install hook: " << s << "\n";
 	}
 	else
 	{
-		std::cout << "NativeInjectionEntryPoint: Hook 'myBeepHook installed successfully.\n";
+		//std::cout << "NativeInjectionEntryPoint: Hook 'myBeepHook installed successfully.\n";
 	}
 
 	// If the threadId in the ACL is set to 0,

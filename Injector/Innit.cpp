@@ -6,7 +6,7 @@
 
 int makehook(DWORD processId) {
 
-	WCHAR* dllToInject = L".\\Hooker.dll";
+	WCHAR* dllToInject = L"C:\\Users\\nunes\\Source\\Repos\\Fortitech-Defense-Solutions\\ransomware-hooker\\x64\\Debug\\Hooker.dll";//L".\\Hooker.dll";
 	wprintf(L"Attempting to inject: %s\n\n", dllToInject);
 
 	// Injeta a dllToInject no processo alvo 
@@ -14,8 +14,8 @@ int makehook(DWORD processId) {
 		processId,
 		0,
 		EASYHOOK_INJECT_DEFAULT,
-		dllToInject,
 		NULL,
+		dllToInject,
 		NULL,
 		0
 	);
@@ -30,11 +30,6 @@ int makehook(DWORD processId) {
 	{
 		std::wcout << L"Library injected successfully.\n";
 	}
-
-	std::wcout << "Press Enter to exit";
-	std::wstring input;
-	std::getline(std::wcin, input);
-	std::getline(std::wcin, input);
 
 	return 0;
 }

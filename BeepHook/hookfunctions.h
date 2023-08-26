@@ -3,4 +3,4 @@
 
 void beepHook();
 
-void readFileHook();
+void hookWriting();

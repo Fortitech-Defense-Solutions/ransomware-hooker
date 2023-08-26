@@ -24,9 +24,9 @@ void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 		"IIIII nn   nn   jjj  eeeee  ccccc  tttt  eeeee  dddddd !!! \n"
 		"              jjjj                                         \n\n";
 	
-	beepHook();
+	//beepHook();
 
-	readFileHook();
+	hookWriting();
 
 	return;
 }

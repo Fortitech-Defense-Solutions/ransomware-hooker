@@ -44,7 +44,7 @@
     <ClCompile Include="hookfunctions.h">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="ReadFile.cpp">
+    <ClCompile Include="WriteHook.cpp">
       <Filter>Source Files\HookFunctions</Filter>
     </ClCompile>
   </ItemGroup>
