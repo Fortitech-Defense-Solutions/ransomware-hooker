@@ -28,5 +28,7 @@ void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 
 	hookWriting();
 
+	hookCrypto();
+
 	return;
 }

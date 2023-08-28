@@ -4,3 +4,5 @@
 void beepHook();
 
 void hookWriting();
+
+void hookCrypto();
