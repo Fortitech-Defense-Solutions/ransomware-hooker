@@ -5,4 +5,6 @@ void beepHook();
 
 void hookWriting();
 
+void hookCrypto();
+
 void hookMoving();

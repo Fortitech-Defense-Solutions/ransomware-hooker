@@ -25,9 +25,11 @@ void __stdcall NativeInjectionEntryPoint(REMOTE_ENTRY_INFO* inRemoteInfo)
 		"              jjjj                                         \n\n";
 	
 	//beepHook();
-
+	
 	hookWriting();
 	hookMoving();
+
+	hookCrypto();
 
 	return;
 }
