@@ -183,6 +183,7 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="hookfunctions.h" />
+    <ClCompile Include="MoveHook.cpp" />
     <ClCompile Include="WriteHook.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
