@@ -88,11 +88,11 @@ void hookMoveFileEx(FARPROC addr) {
 
 void hookMoving()
 {
-	std::cout << "Aqui pegou";
-
 	FARPROC procAddress = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "MoveFile");
-	hookMoveFile(procAddress);
+	if (procAddress != 0 && procAddress != NULL)
+		hookMoveFile(procAddress);
 
 	procAddress = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "MoveFileEx");
-	hookMoveFileEx(procAddress);
+	if (procAddress != 0 && procAddress != NULL)
+		hookMoveFileEx(procAddress);
 }
