@@ -47,7 +47,15 @@
     <ClCompile Include="WriteHook.cpp">
       <Filter>Source Files\HookFunctions</Filter>
     </ClCompile>
+
     <ClCompile Include="CryptoHook.cpp">
+      <Filter>Source Files\HookFunctions</Filter>
+    </ClCompile>
+
+    <ClCompile Include="MoveHook.cpp">
+      <Filter>Source Files\HookFunctions</Filter>
+    </ClCompile>
+
       <Filter>Source Files\HookFunctions</Filter>
     </ClCompile>
   </ItemGroup>

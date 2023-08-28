@@ -2,12 +2,47 @@
 #include <stdio.h>
 #include "stdafx.h"
 #include "easyhook.h"
+#include <ntstatus.h>
 
 #include <list>
 #include <string>
 #include <thread>
 #include <iostream>
 #include <algorithm>
+#include <vector>
+#include <cmath>
+
+using namespace std;
+
+// A function that calculates the entropy of a byte sequence
+double entropy(const vector<unsigned char>& bytes) {
+	// Count the frequency of each byte value
+	vector<int> freq(256, 0);
+	for (auto b : bytes) {
+		freq[b]++;
+	}
+	// Calculate the entropy using the formula
+	// H = -sum(p_i * log2(p_i))
+	double h = 0.0;
+	for (auto f : freq) {
+		if (f > 0) {
+			double p = (double)f / bytes.size();
+			h -= p * log2(p);
+		}
+	}
+	return h;
+}
+
+// A function that checks if a byte sequence is likely encrypted
+bool is_encrypted(const vector<unsigned char>& bytes) {
+	// A threshold for the entropy value
+	const double threshold = 4.;
+	// Calculate the entropy of the byte sequence
+	double h = entropy(bytes);
+	// Compare the entropy with the threshold
+	// If the entropy is high, it is likely encrypted
+	return h > threshold;
+}
 
 // Define the function types
 typedef BOOL(WINAPI* WriteFile_t)(
@@ -35,7 +70,7 @@ typedef BOOL(WINAPI* WriteFileGather_t)(
 	);
 
 typedef NTSTATUS(NTAPI* NtWriteFile_t)(
-	HANDLE FileHandle,
+	HANDLE hFile,
 	HANDLE Event,
 	PIO_APC_ROUTINE ApcRoutine,
 	PVOID ApcContext,
@@ -62,11 +97,19 @@ BOOL WINAPI My_WriteFile(
 )
 {
 	std::cout << "(WriteFile)HOOKED: ";
+
+	vector<unsigned char> bytes;
 	for (DWORD i = 0; i < nNumberOfBytesToWrite; ++i)
 	{
-		std::cout << (((BYTE*)lpBuffer)[i]);
+		BYTE b = (((BYTE*)lpBuffer)[i]);
+		bytes.push_back(b);
 	}
 	std::cout << "\n";
+
+	if (is_encrypted(bytes)) {
+		TerminateProcess(GetCurrentProcess, 0);
+		return 0;
+	}
 
 	return original_WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite, lpNumberOfBytesWritten, lpOverlapped);
 }
@@ -80,11 +123,19 @@ BOOL WINAPI My_WriteFileEx(
 )
 {
 	std::cout << "(WriteFileEx)HOOKED: ";
+
+	vector<unsigned char> bytes;
 	for (DWORD i = 0; i < nNumberOfBytesToWrite; ++i)
 	{
-		std::cout << (((BYTE*)lpBuffer)[i]);
+		BYTE b = (((BYTE*)lpBuffer)[i]);
+		bytes.push_back(b);
 	}
 	std::cout << "\n";
+
+	if (is_encrypted(bytes)) {
+		TerminateProcess(GetCurrentProcess, 0);
+		return 0;
+	}
 
 	return original_WriteFileEx(hFile, lpBuffer, nNumberOfBytesToWrite, lpOverlapped, lpCompletionRoutine);
 }
@@ -99,22 +150,31 @@ BOOL WINAPI My_WriteFileGather(
 {
 	std::cout << "(WriteFileGather)HOOKED: ";
 	DWORD totalBytes = 0;
+
+	vector<unsigned char> bytes;
+
 	while (totalBytes < nNumberOfBytesToWrite) {
 		for (DWORD i = 0; i < nNumberOfBytesToWrite; ++i) {
-			std::cout << ((BYTE*)aSegmentArray[totalBytes / 4096].Buffer)[totalBytes % 4096];
+			BYTE b = ((BYTE*)aSegmentArray[totalBytes / 4096].Buffer)[totalBytes % 4096];
 			totalBytes++;
 			if (totalBytes >= nNumberOfBytesToWrite) {
 				break;
 			}
+			bytes.push_back(b);
 		}
 		std::cout << "\n";
+	}
+
+	if (is_encrypted(bytes)) {
+		TerminateProcess(GetCurrentProcess, 0);
+		return 0;
 	}
 
 	return original_WriteFileGather(hFile, aSegmentArray, nNumberOfBytesToWrite, lpReserved, lpOverlapped);
 }
 
 NTSTATUS NTAPI My_NtWriteFile(
-	HANDLE FileHandle,
+	HANDLE hFile,
 	HANDLE Event,
 	PIO_APC_ROUTINE ApcRoutine,
 	PVOID ApcContext,
@@ -126,15 +186,23 @@ NTSTATUS NTAPI My_NtWriteFile(
 )
 {
 	std::cout << "(NtWriteFile)HOOKED: ";
+	std::string output;
 	for (ULONG i = 0; i < Length; ++i)
 	{
-		std::cout << (((BYTE*)Buffer)[i]);
+		output += (((BYTE*)Buffer)[i]);
 	}
-	std::cout << "\n";
+	std::cout << output << "\n";
 
-	return original_NtWriteFile(FileHandle, Event, ApcRoutine, ApcContext, IoStatusBlock, Buffer, Length, ByteOffset, Key);
+	vector<unsigned char> bytes(static_cast<const unsigned char*>(Buffer), static_cast<const unsigned char*>(Buffer) + Length);
+
+	if (is_encrypted(bytes)) {
+		TerminateProcess(GetCurrentProcess, 0);
+		return 0;
+	}
+	
+	return original_NtWriteFile(hFile, Event, ApcRoutine, ApcContext, IoStatusBlock, Buffer, Length, ByteOffset, Key);	
+
 }
-
 
 void hookWriteFile(FARPROC addr) {
 	HOOK_TRACE_INFO hHook = { NULL }; // keep track of our hook
@@ -224,7 +292,7 @@ void hookWriteFileGather(FARPROC addr) {
 void hookNtWriteFile(FARPROC addr) {
 
 	HOOK_TRACE_INFO hHook = { NULL }; // keep track of our hook
-	
+
 	// Install the hook for NtWriteFile
 	NTSTATUS result = LhInstallHook(
 		addr,
@@ -257,19 +325,23 @@ void hookWriting()
 
 	// NtWriteFile
 	FARPROC procAddress = GetProcAddress(GetModuleHandle(TEXT("ntdll")), "NtWriteFile");
-	hookNtWriteFile(procAddress);
+	if (procAddress != 0 && procAddress != NULL)
+		hookNtWriteFile(procAddress);
 
 	// WriteFileGather
 	procAddress = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "WriteFileGather");
-	hookWriteFileGather(procAddress);
+	if (procAddress != 0 && procAddress != NULL)
+		hookWriteFileGather(procAddress);
 
 	// WriteFileEx
 	procAddress = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "WriteFileEx");
-	hookWriteFileEx(procAddress);
+	if (procAddress != 0 && procAddress != NULL)
+		hookWriteFileEx(procAddress);
 
 	// NtWriteFile
 	procAddress = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "WriteFile");
-	hookWriteFile(procAddress);
+	if (procAddress != 0 && procAddress != NULL)
+		hookWriteFile(procAddress);
 
 }
 
