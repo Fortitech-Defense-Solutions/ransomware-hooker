@@ -71,9 +71,8 @@ NTSTATUS NTAPI My_BCryptEncrypt(
 )
 {
     std::cout << "Hooked: BCryptEncrypt\n";
-    // Your custom code to log or manipulate encrypted data
-    // ...
-
+    TerminateProcess(GetCurrentProcess(), 0);
+    
     return original_BCryptEncrypt(hKey, pbInput, cbInput, pPaddingInfo, pbIV, cbIV, pbOutput, cbOutput, pcbResult, dwFlags);
 }
 
@@ -100,8 +99,7 @@ BOOL WINAPI My_CryptUnprotectData(
 )
 {
     std::cout << "Hooked: CryptUnprotectData\n";
-    // Your custom code to log or manipulate decrypted data
-    // ...
+    TerminateProcess(GetCurrentProcess(), 0);
 
     return original_CryptUnprotectData(pDataIn, pszDataDescr, pOptionalEntropy, pvReserved, pPromptStruct, dwFlags, pDataOut);
 }
@@ -123,8 +121,7 @@ BOOL WINAPI My_CryptGenKey(
 )
 {
     std::cout << "Hooked: CryptGenKey\n";
-    // Your custom code to log or manipulate key generation
-    // ...
+    TerminateProcess(GetCurrentProcess(), 0);
 
     return original_CryptGenKey(hProv, Algid, dwFlags, phKey);
 }
@@ -150,8 +147,7 @@ BOOL WINAPI My_CryptExportKey(
 )
 {
     std::cout << "Hooked: CryptExportKey\n";
-    // Your custom code to log or manipulate key export
-    // ...
+    TerminateProcess(GetCurrentProcess(), 0);
 
     return original_CryptExportKey(hKey, hExpKey, dwBlobType, dwFlags, pbData, pdwDataLen);
 }
