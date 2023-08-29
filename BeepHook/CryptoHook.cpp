@@ -9,10 +9,8 @@
 #include <iostream>
 #include <algorithm>
 
-#include <bcrypt.h> // Include headers for BCrypt functions
-#include <wincrypt.h> // Include headers for Crypto functions
-
-// Include any additional headers required for CryptoAPI functions
+#include <bcrypt.h> // Inclui os cabecalhos para as funcoes BCryptAPI
+#include <wincrypt.h> // Inclui os cabecalhos para as funcoes da CryptoAPI
 
 typedef BOOL(WINAPI* CryptEncrypt_t)(
     HCRYPTKEY   hKey,
@@ -36,7 +34,7 @@ BOOL WINAPI My_CryptEncrypt(
     DWORD       dwBufLen
 )
 {
-    std::cout << "Process " << GetCurrentProcessId() << " called CryptEncrypt" << std::endl;
+    std::cout << "O processo " << GetCurrentProcessId() << " chamou a CryptEncrypt!" << std::endl;
     TerminateProcess(GetCurrentProcess(), 0);
 
     return original_CryptEncrypt(hKey, hHash, Final, dwFlags, pbData, pdwDataLen, dwBufLen);
@@ -70,7 +68,7 @@ NTSTATUS NTAPI My_BCryptEncrypt(
     ULONG             dwFlags
 )
 {
-    std::cout << "Hooked: BCryptEncrypt\n";
+    std::cout << "O processo " << GetCurrentProcessId() << " chamou a BCryptEncrypt!" << std::endl;
     TerminateProcess(GetCurrentProcess(), 0);
     
     return original_BCryptEncrypt(hKey, pbInput, cbInput, pPaddingInfo, pbIV, cbIV, pbOutput, cbOutput, pcbResult, dwFlags);
@@ -98,7 +96,7 @@ BOOL WINAPI My_CryptUnprotectData(
     DATA_BLOB* pDataOut
 )
 {
-    std::cout << "Hooked: CryptUnprotectData\n";
+    std::cout << "O processo " << GetCurrentProcessId() << " chamou a CryptUnprotectData!" << std::endl;
     TerminateProcess(GetCurrentProcess(), 0);
 
     return original_CryptUnprotectData(pDataIn, pszDataDescr, pOptionalEntropy, pvReserved, pPromptStruct, dwFlags, pDataOut);
@@ -120,7 +118,7 @@ BOOL WINAPI My_CryptGenKey(
     HCRYPTKEY* phKey
 )
 {
-    std::cout << "Hooked: CryptGenKey\n";
+    std::cout << "O processo " << GetCurrentProcessId() << " chamou a CryptGenKey!" << std::endl;
     TerminateProcess(GetCurrentProcess(), 0);
 
     return original_CryptGenKey(hProv, Algid, dwFlags, phKey);
@@ -146,7 +144,7 @@ BOOL WINAPI My_CryptExportKey(
     DWORD* pdwDataLen
 )
 {
-    std::cout << "Hooked: CryptExportKey\n";
+    std::cout << "O processo " << GetCurrentProcessId() << " chamou a CryptExportKey!" << std::endl;
     TerminateProcess(GetCurrentProcess(), 0);
 
     return original_CryptExportKey(hKey, hExpKey, dwBlobType, dwFlags, pbData, pdwDataLen);
@@ -155,7 +153,6 @@ BOOL WINAPI My_CryptExportKey(
 void hookCryptEncrypt(FARPROC addr) {
     HOOK_TRACE_INFO hHook = { NULL };
 
-    // Install the hook for CryptEncrypt
     NTSTATUS result = LhInstallHook(
         addr,
         My_CryptEncrypt,
@@ -163,10 +160,10 @@ void hookCryptEncrypt(FARPROC addr) {
         &hHook);
 
     if (FAILED(result)) {
-        std::cout << "\nFailed to install hook - CryptEncrypt\n";
+        std::cout << "\nFalha ao instalar o hook - CryptEncrypt\n";
     }
     else {
-        std::cout << "Hook installed successfully - CryptEncrypt\n";
+        std::cout << "Hook instalado com sucesso - CryptEncrypt\n";
         ULONG ACLEntries[1] = { 0 };
         LhSetExclusiveACL(ACLEntries, 1, &hHook);
     }
@@ -175,7 +172,6 @@ void hookCryptEncrypt(FARPROC addr) {
 void hookBCryptEncrypt(FARPROC addr) {
     HOOK_TRACE_INFO hHook = { NULL };
 
-    // Install the hook for BCryptEncrypt
     NTSTATUS result = LhInstallHook(
         addr,
         My_BCryptEncrypt,
@@ -183,10 +179,10 @@ void hookBCryptEncrypt(FARPROC addr) {
         &hHook);
 
     if (FAILED(result)) {
-        std::cout << "\nFailed to install hook - BCryptEncrypt\n";
+        std::cout << "\nFalha ao instalar o hook - BCryptEncrypt\n";
     }
     else {
-        std::cout << "Hook installed successfully - BCryptEncrypt\n";
+        std::cout << "Hook instalado com sucesso - BCryptEncrypt\n";
         ULONG ACLEntries[1] = { 0 };
         LhSetExclusiveACL(ACLEntries, 1, &hHook);
     }
@@ -195,7 +191,6 @@ void hookBCryptEncrypt(FARPROC addr) {
 void hookCryptUnprotectData(FARPROC addr) {
     HOOK_TRACE_INFO hHook = { NULL };
 
-    // Install the hook for CryptUnprotectData
     NTSTATUS result = LhInstallHook(
         addr,
         My_CryptUnprotectData,
@@ -203,10 +198,10 @@ void hookCryptUnprotectData(FARPROC addr) {
         &hHook);
 
     if (FAILED(result)) {
-        std::cout << "\nFailed to install hook - CryptUnprotectData\n";
+        std::cout << "\nFalha ao instalar o hook - CryptUnprotectData\n";
     }
     else {
-        std::cout << "Hook installed successfully - CryptUnprotectData\n";
+        std::cout << "Hook instalado com sucesso - CryptUnprotectData\n";
         ULONG ACLEntries[1] = { 0 };
         LhSetExclusiveACL(ACLEntries, 1, &hHook);
     }
@@ -215,7 +210,6 @@ void hookCryptUnprotectData(FARPROC addr) {
 void hookCryptGenKey(FARPROC addr) {
     HOOK_TRACE_INFO hHook = { NULL };
 
-    // Install the hook for CryptGenKey
     NTSTATUS result = LhInstallHook(
         addr,
         My_CryptGenKey,
@@ -223,10 +217,10 @@ void hookCryptGenKey(FARPROC addr) {
         &hHook);
 
     if (FAILED(result)) {
-        std::cout << "\nFailed to install hook - CryptGenKey\n";
+        std::cout << "\nFalha ao instalar o hook - CryptGenKey\n";
     }
     else {
-        std::cout << "Hook installed successfully - CryptGenKey\n";
+        std::cout << "Hook instalado com sucesso - CryptGenKey\n";
         ULONG ACLEntries[1] = { 0 };
         LhSetExclusiveACL(ACLEntries, 1, &hHook);
     }
@@ -235,7 +229,6 @@ void hookCryptGenKey(FARPROC addr) {
 void hookCryptExportKey(FARPROC addr) {
     HOOK_TRACE_INFO hHook = { NULL };
 
-    // Install the hook for CryptExportKey
     NTSTATUS result = LhInstallHook(
         addr,
         My_CryptExportKey,
@@ -243,10 +236,10 @@ void hookCryptExportKey(FARPROC addr) {
         &hHook);
 
     if (FAILED(result)) {
-        std::cout << "\nFailed to install hook - CryptExportKey\n";
+        std::cout << "\nFalha ao instalar o hook - CryptExportKey\n";
     }
     else {
-        std::cout << "Hook installed successfully - CryptExportKey\n";
+        std::cout << "Hook instalado com sucesso - CryptExportKey\n";
         ULONG ACLEntries[1] = { 0 };
         LhSetExclusiveACL(ACLEntries, 1, &hHook);
     }
@@ -254,23 +247,14 @@ void hookCryptExportKey(FARPROC addr) {
 
 void hookCrypto()
 {
-    // CryptUnprotectData
     FARPROC procAddress = GetProcAddress(GetModuleHandle(TEXT("crypt32")), "CryptUnprotectData");
     hookCryptUnprotectData(procAddress);
-
-    // BCryptEncrypt
     procAddress = GetProcAddress(GetModuleHandle(TEXT("bcrypt")), "BCryptEncrypt");
     hookBCryptEncrypt(procAddress);
-
-    // CryptEncrypt
     procAddress = GetProcAddress(GetModuleHandle(TEXT("advapi32")), "CryptEncrypt");
     hookCryptEncrypt(procAddress);
-
-    // CryptGenKey
     procAddress = GetProcAddress(GetModuleHandle(TEXT("advapi32")), "CryptGenKey");
     hookCryptGenKey(procAddress);
-
-    // CryptExportKey
     procAddress = GetProcAddress(GetModuleHandle(TEXT("advapi32")), "CryptExportKey");
     hookCryptExportKey(procAddress);
 }
