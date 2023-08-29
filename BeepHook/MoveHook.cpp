@@ -55,11 +55,11 @@ void hookMoveFile(FARPROC addr) {
 
 	if (FAILED(result))
 	{
-		std::cout << "\nFalha em instalar o hook - MoveFile\n";
+		std::cout << "\nFalha ao instalar o hook - MoveFile\n";
 	}
 	else
 	{
-		std::cout << "Hook installado com sucesso - MoveFile.\n";
+		std::cout << "Hook instalado com sucesso - MoveFile.\n";
 		ULONG ACLEntries[1] = { 0 };
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
 	}
@@ -76,11 +76,11 @@ void hookMoveFileEx(FARPROC addr) {
 
 	if (FAILED(result))
 	{
-		std::cout << "\nFalha em instalar o hook - MoveFileEx\n";
+		std::cout << "\nFalha ao instalar o hook - MoveFileEx\n";
 	}
 	else
 	{
-		std::cout << "Hook installado com sucesso - MoveFileEx.\n";
+		std::cout << "Hook instalado com sucesso - MoveFileEx.\n";
 		ULONG ACLEntries[1] = { 0 };
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
 	}
@@ -88,6 +88,8 @@ void hookMoveFileEx(FARPROC addr) {
 
 void hookMoving()
 {
+	std::cout << "Aqui pegou";
+
 	FARPROC procAddress = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "MoveFile");
 	if (procAddress != 0 && procAddress != NULL)
 		hookMoveFile(procAddress);

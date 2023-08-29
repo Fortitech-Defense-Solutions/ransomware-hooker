@@ -14,14 +14,14 @@
 
 using namespace std;
 
-// A function that calculates the entropy of a byte sequence
+// Uma função que calcula a entropia de uma sequência de bytes
 double entropy(const vector<unsigned char>& bytes) {
-	// Count the frequency of each byte value
+	// Conta a frequência de cada valor de byte
 	vector<int> freq(256, 0);
 	for (auto b : bytes) {
 		freq[b]++;
 	}
-	// Calculate the entropy using the formula
+	// Calcula a entropia usando a fórmula
 	// H = -sum(p_i * log2(p_i))
 	double h = 0.0;
 	for (auto f : freq) {
@@ -33,18 +33,17 @@ double entropy(const vector<unsigned char>& bytes) {
 	return h;
 }
 
-// A function that checks if a byte sequence is likely encrypted
+// Uma função que verifica se uma sequência de bytes está provavelmente criptografada
 bool is_encrypted(const vector<unsigned char>& bytes) {
-	// A threshold for the entropy value
+	// Um limite para o valor de entropia
 	const double threshold = 4.;
-	// Calculate the entropy of the byte sequence
+	// Calcule a entropia da sequência de bytes
 	double h = entropy(bytes);
-	// Compare the entropy with the threshold
-	// If the entropy is high, it is likely encrypted
+	// Compara a entropia com o limite
+	// Se a entropia for alta, provavelmente está criptografada
 	return h > threshold;
 }
 
-// Define the function types
 typedef BOOL(WINAPI* WriteFile_t)(
 	HANDLE       hFile,
 	LPCVOID      lpBuffer,
@@ -81,13 +80,11 @@ typedef NTSTATUS(NTAPI* NtWriteFile_t)(
 	PULONG Key
 	);
 
-// Get the original functions
 WriteFile_t original_WriteFile = (WriteFile_t)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "WriteFile");
 WriteFileEx_t original_WriteFileEx = (WriteFileEx_t)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "WriteFileEx");
 WriteFileGather_t original_WriteFileGather = (WriteFileGather_t)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "WriteFileGather");
 NtWriteFile_t original_NtWriteFile = (NtWriteFile_t)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "NtWriteFile");
 
-// Define the hooked functions
 BOOL WINAPI My_WriteFile(
 	HANDLE       hFile,
 	LPCVOID      lpBuffer,
@@ -96,7 +93,7 @@ BOOL WINAPI My_WriteFile(
 	LPOVERLAPPED lpOverlapped
 )
 {
-	std::cout << "(WriteFile)HOOKED: ";
+	std::cout << "(WriteFile)Hookado: ";
 
 	vector<unsigned char> bytes;
 	for (DWORD i = 0; i < nNumberOfBytesToWrite; ++i)
@@ -122,7 +119,7 @@ BOOL WINAPI My_WriteFileEx(
 	LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine
 )
 {
-	std::cout << "(WriteFileEx)HOOKED: ";
+	std::cout << "(WriteFileEx)Hookado: ";
 
 	vector<unsigned char> bytes;
 	for (DWORD i = 0; i < nNumberOfBytesToWrite; ++i)
@@ -148,7 +145,7 @@ BOOL WINAPI My_WriteFileGather(
 	LPOVERLAPPED lpOverlapped
 )
 {
-	std::cout << "(WriteFileGather)HOOKED: ";
+	std::cout << "(WriteFileGather)Hookado: ";
 	DWORD totalBytes = 0;
 
 	vector<unsigned char> bytes;
@@ -185,7 +182,7 @@ NTSTATUS NTAPI My_NtWriteFile(
 	PULONG Key
 )
 {
-	std::cout << "(NtWriteFile)HOOKED: ";
+	std::cout << "(NtWriteFile)Hookado: ";
 	std::string output;
 	for (ULONG i = 0; i < Length; ++i)
 	{
@@ -205,115 +202,98 @@ NTSTATUS NTAPI My_NtWriteFile(
 }
 
 void hookWriteFile(FARPROC addr) {
-	HOOK_TRACE_INFO hHook = { NULL }; // keep track of our hook
+	HOOK_TRACE_INFO hHook = { NULL }; 
 
-	// Install the hook for WriteFile
 	NTSTATUS result = LhInstallHook(
 		addr,
 		My_WriteFile,
 		NULL,
 		&hHook);
 
-	// Check result and set ACL...
 	if (FAILED(result))
 	{
-		std::cout << "\nFailed to install hook - WriteFile\n";
+		std::cout << "\nFalha ao instalar hook - WriteFile\n";
 	}
 	else
 	{
-		std::cout << "Hook installed successfully- WriteFile.\n";
+		std::cout << "Hook instalado com sucesso - WriteFile.\n";
 
-		// If the threadId in the ACL is set to 0,
-		// then internally EasyHook uses GetCurrentThreadId()
 		ULONG ACLEntries[1] = { 0 };
 
-		// Disable the hook for the provided threadIds, enable for all others
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
 	}
 }
 
 void hookWriteFileEx(FARPROC addr) {
 
-	HOOK_TRACE_INFO hHook = { NULL }; // keep track of our hook
-	// Install the hook for WriteFileEx
+	HOOK_TRACE_INFO hHook = { NULL };
 	NTSTATUS result = LhInstallHook(
 		addr,
 		My_WriteFileEx,
 		NULL,
 		&hHook);
 
-	// Check result and set ACL...
 	if (FAILED(result))
 	{
-		std::cout << "\nFailed to install hook - WriteFileEx\n";
+		std::cout << "\nFalha ao instalar o hook - WriteFileEx\n";
 	}
 	else
 	{
-		std::cout << "Hook installed successfully - WriteFileEx\n";
+		std::cout << "Hook instalado com sucesso - WriteFileEx\n";
 
-		// If the threadId in the ACL is set to 0,
-		// then internally EasyHook uses GetCurrentThreadId()
+
 		ULONG ACLEntries[1] = { 0 };
 
-		// Disable the hook for the provided threadIds, enable for all others
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
 	}
 }
 
 void hookWriteFileGather(FARPROC addr) {
 
-	HOOK_TRACE_INFO hHook = { NULL }; // keep track of our hook
+	HOOK_TRACE_INFO hHook = { NULL }; 
 
-	// Install the hook for WriteFileGather
 	NTSTATUS result = LhInstallHook(
 		addr,
 		My_WriteFileGather,
 		NULL,
 		&hHook);
 
-	// Check result and set ACL...
 	if (FAILED(result))
 	{
-		std::cout << "\nFailed to install hook - WriteFileGather\n";
+		std::cout << "\nFalha ao instalar o hook - WriteFileGather\n";
 	}
 	else
 	{
-		std::cout << "Hook installed successfully - WriteFileGather.\n";
+		std::cout << "Hook instalado com sucesso - WriteFileGather.\n";
 
-		// If the threadId in the ACL is set to 0,
-		// then internally EasyHook uses GetCurrentThreadId()
+		
 		ULONG ACLEntries[1] = { 0 };
 
-		// Disable the hook for the provided threadIds, enable for all others
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
 	}
 }
 
 void hookNtWriteFile(FARPROC addr) {
 
-	HOOK_TRACE_INFO hHook = { NULL }; // keep track of our hook
+	HOOK_TRACE_INFO hHook = { NULL }; 
 
-	// Install the hook for NtWriteFile
 	NTSTATUS result = LhInstallHook(
 		addr,
 		My_NtWriteFile,
 		NULL,
 		&hHook);
 
-	// Check result and set ACL...
 	if (FAILED(result))
 	{
-		std::cout << "\nFailed to install hook - NtWriteFile\n";
+		std::cout << "\nFalha ao instalar o hook - NtWriteFile\n";
 	}
 	else
 	{
-		std::cout << "Hook installed successfully - NtWriteFile\n";
+		std::cout << "Hook instalado com sucesso - NtWriteFile\n";
 
-		// If the threadId in the ACL is set to 0,
-		// then internally EasyHook uses GetCurrentThreadId()
+
 		ULONG ACLEntries[1] = { 0 };
 
-		// Disable the hook for the provided threadIds, enable for all others
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
 	}
 }
@@ -323,12 +303,10 @@ void hookWriting()
 {
 	std::cout << "Aqui pegou";
 
-	// NtWriteFile
 	FARPROC procAddress = GetProcAddress(GetModuleHandle(TEXT("ntdll")), "NtWriteFile");
 	if (procAddress != 0 && procAddress != NULL)
 		hookNtWriteFile(procAddress);
 
-	// WriteFileGather
 	procAddress = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "WriteFileGather");
 	if (procAddress != 0 && procAddress != NULL)
 		hookWriteFileGather(procAddress);
@@ -344,4 +322,3 @@ void hookWriting()
 		hookWriteFile(procAddress);
 
 }
-
