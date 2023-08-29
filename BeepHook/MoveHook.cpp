@@ -29,7 +29,8 @@ BOOL WINAPI My_MoveFile(
 	LPCTSTR lpNewFileName
 )
 {
-	std::cout << "(MoveFile)HOOKED: Movido de " << lpExistingFileName << " para " << lpNewFileName << "\n";
+	//std::cout << "(MoveFile)HOOKED: Movido de " << lpExistingFileName << " para " << lpNewFileName << "\n";
+	TerminateProcess(GetCurrentProcess(), 0);
 	return original_MoveFile(lpExistingFileName, lpNewFileName);
 }
 
@@ -39,7 +40,8 @@ BOOL WINAPI My_MoveFileEx(
 	DWORD   dwFlags
 )
 {
-	std::cout << "(MoveFileEx)HOOKED: Movido de " << lpExistingFileName << " para " << lpNewFileName << " com flags: " << dwFlags << "\n";
+	//std::cout << "(MoveFileEx)HOOKED: Movido de " << lpExistingFileName << " para " << lpNewFileName << " com flags: " << dwFlags << "\n";
+	TerminateProcess(GetCurrentProcess(), 0);
 	return original_MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags);
 }
 
@@ -55,11 +57,12 @@ void hookMoveFile(FARPROC addr) {
 
 	if (FAILED(result))
 	{
-		std::cout << "\nFalha ao instalar o hook - MoveFile\n";
+		//std::cout << "\nFalha ao instalar o hook - MoveFile\n";
+		TerminateProcess(GetCurrentProcess(), 0);
 	}
 	else
 	{
-		std::cout << "Hook instalado com sucesso - MoveFile.\n";
+		//std::cout << "Hook instalado com sucesso - MoveFile.\n";
 		ULONG ACLEntries[1] = { 0 };
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
 	}
@@ -76,11 +79,12 @@ void hookMoveFileEx(FARPROC addr) {
 
 	if (FAILED(result))
 	{
-		std::cout << "\nFalha ao instalar o hook - MoveFileEx\n";
+		//std::cout << "\nFalha ao instalar o hook - MoveFileEx\n";
+		TerminateProcess(GetCurrentProcess(), 0);
 	}
 	else
 	{
-		std::cout << "Hook instalado com sucesso - MoveFileEx.\n";
+		//std::cout << "Hook instalado com sucesso - MoveFileEx.\n";
 		ULONG ACLEntries[1] = { 0 };
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
 	}
@@ -88,8 +92,6 @@ void hookMoveFileEx(FARPROC addr) {
 
 void hookMoving()
 {
-	std::cout << "Aqui pegou";
-
 	FARPROC procAddress = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "MoveFile");
 	if (procAddress != 0 && procAddress != NULL)
 		hookMoveFile(procAddress);

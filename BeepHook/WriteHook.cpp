@@ -14,7 +14,6 @@
 
 using namespace std;
 
-// Uma função que calcula a entropia de uma sequência de bytes
 double entropy(const vector<unsigned char>& bytes) {
 	// Conta a frequência de cada valor de byte
 	vector<int> freq(256, 0);
@@ -35,12 +34,8 @@ double entropy(const vector<unsigned char>& bytes) {
 
 // Uma função que verifica se uma sequência de bytes está provavelmente criptografada
 bool is_encrypted(const vector<unsigned char>& bytes) {
-	// Um limite para o valor de entropia
-	const double threshold = 4.;
-	// Calcule a entropia da sequência de bytes
+	const double threshold = 0.;
 	double h = entropy(bytes);
-	// Compara a entropia com o limite
-	// Se a entropia for alta, provavelmente está criptografada
 	return h > threshold;
 }
 
@@ -93,15 +88,12 @@ BOOL WINAPI My_WriteFile(
 	LPOVERLAPPED lpOverlapped
 )
 {
-	std::cout << "(WriteFile)Hookado: ";
-
 	vector<unsigned char> bytes;
 	for (DWORD i = 0; i < nNumberOfBytesToWrite; ++i)
 	{
 		BYTE b = (((BYTE*)lpBuffer)[i]);
 		bytes.push_back(b);
 	}
-	std::cout << "\n";
 
 	if (is_encrypted(bytes)) {
 		TerminateProcess(GetCurrentProcess, 0);
@@ -119,15 +111,12 @@ BOOL WINAPI My_WriteFileEx(
 	LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine
 )
 {
-	std::cout << "(WriteFileEx)Hookado: ";
-
 	vector<unsigned char> bytes;
 	for (DWORD i = 0; i < nNumberOfBytesToWrite; ++i)
 	{
 		BYTE b = (((BYTE*)lpBuffer)[i]);
 		bytes.push_back(b);
 	}
-	std::cout << "\n";
 
 	if (is_encrypted(bytes)) {
 		TerminateProcess(GetCurrentProcess, 0);
@@ -145,7 +134,6 @@ BOOL WINAPI My_WriteFileGather(
 	LPOVERLAPPED lpOverlapped
 )
 {
-	std::cout << "(WriteFileGather)Hookado: ";
 	DWORD totalBytes = 0;
 
 	vector<unsigned char> bytes;
@@ -153,13 +141,12 @@ BOOL WINAPI My_WriteFileGather(
 	while (totalBytes < nNumberOfBytesToWrite) {
 		for (DWORD i = 0; i < nNumberOfBytesToWrite; ++i) {
 			BYTE b = ((BYTE*)aSegmentArray[totalBytes / 4096].Buffer)[totalBytes % 4096];
+			bytes.push_back(b);
 			totalBytes++;
 			if (totalBytes >= nNumberOfBytesToWrite) {
 				break;
 			}
-			bytes.push_back(b);
 		}
-		std::cout << "\n";
 	}
 
 	if (is_encrypted(bytes)) {
@@ -182,18 +169,10 @@ NTSTATUS NTAPI My_NtWriteFile(
 	PULONG Key
 )
 {
-	std::cout << "(NtWriteFile)Hookado: ";
-	std::string output;
-	for (ULONG i = 0; i < Length; ++i)
-	{
-		output += (((BYTE*)Buffer)[i]);
-	}
-	std::cout << output << "\n";
-
 	vector<unsigned char> bytes(static_cast<const unsigned char*>(Buffer), static_cast<const unsigned char*>(Buffer) + Length);
 
 	if (is_encrypted(bytes)) {
-		TerminateProcess(GetCurrentProcess, 0);
+		TerminateProcess(GetCurrentProcess(), 0);
 		return 0;
 	}
 	
@@ -212,14 +191,13 @@ void hookWriteFile(FARPROC addr) {
 
 	if (FAILED(result))
 	{
-		std::cout << "\nFalha ao instalar hook - WriteFile\n";
+		//std::cout << "\nFalha ao instalar hook - WriteFile\n";
+		TerminateProcess(GetCurrentProcess(), 0);
 	}
 	else
 	{
-		std::cout << "Hook instalado com sucesso - WriteFile.\n";
-
+		//std::cout << "Hook instalado com sucesso - WriteFile.\n";
 		ULONG ACLEntries[1] = { 0 };
-
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
 	}
 }
@@ -235,15 +213,13 @@ void hookWriteFileEx(FARPROC addr) {
 
 	if (FAILED(result))
 	{
-		std::cout << "\nFalha ao instalar o hook - WriteFileEx\n";
+		//std::cout << "\nFalha ao instalar o hook - WriteFileEx\n";
+		TerminateProcess(GetCurrentProcess(), 0);
 	}
 	else
 	{
-		std::cout << "Hook instalado com sucesso - WriteFileEx\n";
-
-
+		//std::cout << "Hook instalado com sucesso - WriteFileEx\n";
 		ULONG ACLEntries[1] = { 0 };
-
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
 	}
 }
@@ -260,15 +236,13 @@ void hookWriteFileGather(FARPROC addr) {
 
 	if (FAILED(result))
 	{
-		std::cout << "\nFalha ao instalar o hook - WriteFileGather\n";
+		//std::cout << "\nFalha ao instalar o hook - WriteFileGather\n";
+		TerminateProcess(GetCurrentProcess(), 0);
 	}
 	else
 	{
-		std::cout << "Hook instalado com sucesso - WriteFileGather.\n";
-
-		
+		//std::cout << "Hook instalado com sucesso - WriteFileGather.\n";
 		ULONG ACLEntries[1] = { 0 };
-
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
 	}
 }
@@ -285,15 +259,13 @@ void hookNtWriteFile(FARPROC addr) {
 
 	if (FAILED(result))
 	{
-		std::cout << "\nFalha ao instalar o hook - NtWriteFile\n";
+		//std::cout << "\nFalha ao instalar o hook - NtWriteFile\n";
+		TerminateProcess(GetCurrentProcess(), 0);
 	}
 	else
 	{
-		std::cout << "Hook instalado com sucesso - NtWriteFile\n";
-
-
+		//std::cout << "Hook instalado com sucesso - NtWriteFile\n";
 		ULONG ACLEntries[1] = { 0 };
-
 		LhSetExclusiveACL(ACLEntries, 1, &hHook);
 	}
 }
@@ -301,8 +273,6 @@ void hookNtWriteFile(FARPROC addr) {
 
 void hookWriting()
 {
-	std::cout << "Aqui pegou";
-
 	FARPROC procAddress = GetProcAddress(GetModuleHandle(TEXT("ntdll")), "NtWriteFile");
 	if (procAddress != 0 && procAddress != NULL)
 		hookNtWriteFile(procAddress);

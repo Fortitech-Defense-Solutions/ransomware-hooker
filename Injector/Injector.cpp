@@ -61,7 +61,20 @@ int _tmain(int argc, _TCHAR* argv[]){
 
         
         for (DWORD pid : newProcesses) {
-            makehook(pid);
+            if (makehook(pid) != 1) {
+                HANDLE hPid = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+
+                if (hPid == NULL)
+                    return FALSE;
+
+                BOOL result = TerminateProcess(hPid, 0);
+
+                while (!result) {
+                    result = TerminateProcess(hPid, 0);
+                }
+
+                CloseHandle(hPid);
+            }
         }
 
         currentProcesses.splice(currentProcesses.end(), newProcesses);

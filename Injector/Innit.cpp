@@ -22,13 +22,14 @@ int makehook(DWORD processId) {
 
 	if (nt != 0)
 	{
-		printf("RhInjectLibrary falhou com o código de erro = %d\n", nt);
+		/*printf("RhInjectLibrary falhou com o código de erro = %d\n", nt);
 		PWCHAR err = RtlGetLastErrorString();
-		std::wcout << err << "\n";
+		std::wcout << err << "\n";*/
+		return 0;
 	}
 	else
 	{
-		std::wcout << L"Biblioteca injetada com sucesso.\n";
+		return 1;
 	}
 
 	return 0;

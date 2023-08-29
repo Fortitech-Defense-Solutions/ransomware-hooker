@@ -76,12 +76,12 @@ BOOL WINAPI My_CryptEncrypt(
 {
     if (!isOnWhitelist(GetCurrentProcessId())) 
     {
-        std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar CryptEncrypt!" << std::endl;
+        //std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar CryptEncrypt!" << std::endl;
         SetLastError(ERROR_ACCESS_DENIED);
         return FALSE;
     }
 
-    std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou CryptEncrypt!" << std::endl;
+    //std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou CryptEncrypt!" << std::endl;
     return original_CryptEncrypt(hKey, hHash, Final, dwFlags, pbData, pdwDataLen, dwBufLen);
 }
 
@@ -115,12 +115,12 @@ NTSTATUS NTAPI My_BCryptEncrypt(
 {
     if (!isOnWhitelist(GetCurrentProcessId()))
     {
-        std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar BCryptEncrypt!" << std::endl;
+        //std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar BCryptEncrypt!" << std::endl;
         SetLastError(ERROR_ACCESS_DENIED);
         return FALSE;
     }
 
-    std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou BCryptEncrypt!" << std::endl;
+    //std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou BCryptEncrypt!" << std::endl;
     
     return original_BCryptEncrypt(hKey, pbInput, cbInput, pPaddingInfo, pbIV, cbIV, pbOutput, cbOutput, pcbResult, dwFlags);
 }
@@ -149,12 +149,12 @@ BOOL WINAPI My_CryptUnprotectData(
 {
     if (!isOnWhitelist(GetCurrentProcessId()))
     {
-        std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar CryptUnprotectData!" << std::endl;
+        //std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar CryptUnprotectData!" << std::endl;
         SetLastError(ERROR_ACCESS_DENIED);
         return FALSE;
     }
 
-    std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou CryptUnprotectData!" << std::endl;
+    //std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou CryptUnprotectData!" << std::endl;
 
     return original_CryptUnprotectData(pDataIn, pszDataDescr, pOptionalEntropy, pvReserved, pPromptStruct, dwFlags, pDataOut);
 }
@@ -177,12 +177,12 @@ BOOL WINAPI My_CryptGenKey(
 {
     if (!isOnWhitelist(GetCurrentProcessId()))
     {
-        std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar CryptGenKey!" << std::endl;
+        //std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar CryptGenKey!" << std::endl;
         SetLastError(ERROR_ACCESS_DENIED);
         return FALSE;
     }
 
-    std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou CryptGenKey!" << std::endl;
+    //std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou CryptGenKey!" << std::endl;
 
     return original_CryptGenKey(hProv, Algid, dwFlags, phKey);
 }
@@ -209,12 +209,12 @@ BOOL WINAPI My_CryptExportKey(
 {
     if (!isOnWhitelist(GetCurrentProcessId()))
     {
-        std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar CryptExportKey!" << std::endl;
+        //std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar CryptExportKey!" << std::endl;
         SetLastError(ERROR_ACCESS_DENIED);
         return FALSE;
     }
 
-    std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou CryptExportKey!" << std::endl;
+    //std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou CryptExportKey!" << std::endl;
 
     return original_CryptExportKey(hKey, hExpKey, dwBlobType, dwFlags, pbData, pdwDataLen);
 }
@@ -229,10 +229,11 @@ void hookCryptEncrypt(FARPROC addr) {
         &hHook);
 
     if (FAILED(result)) {
-        std::cout << "\nFalha ao instalar o hook - CryptEncrypt\n";
+        //std::cout << "\nFalha ao instalar o hook - CryptEncrypt\n";
+        TerminateProcess(GetCurrentProcess(), 0);
     }
     else {
-        std::cout << "Hook instalado com sucesso - CryptEncrypt\n";
+        //std::cout << "Hook instalado com sucesso - CryptEncrypt\n";
         ULONG ACLEntries[1] = { 0 };
         LhSetExclusiveACL(ACLEntries, 1, &hHook);
     }
@@ -248,10 +249,11 @@ void hookBCryptEncrypt(FARPROC addr) {
         &hHook);
 
     if (FAILED(result)) {
-        std::cout << "\nFalha ao instalar o hook - BCryptEncrypt\n";
+        //std::cout << "\nFalha ao instalar o hook - BCryptEncrypt\n";
+        TerminateProcess(GetCurrentProcess(), 0);
     }
     else {
-        std::cout << "Hook instalado com sucesso - BCryptEncrypt\n";
+        //std::cout << "Hook instalado com sucesso - BCryptEncrypt\n";
         ULONG ACLEntries[1] = { 0 };
         LhSetExclusiveACL(ACLEntries, 1, &hHook);
     }
@@ -267,10 +269,11 @@ void hookCryptUnprotectData(FARPROC addr) {
         &hHook);
 
     if (FAILED(result)) {
-        std::cout << "\nFalha ao instalar o hook - CryptUnprotectData\n";
+        //std::cout << "\nFalha ao instalar o hook - CryptUnprotectData\n";
+        TerminateProcess(GetCurrentProcess(), 0);
     }
     else {
-        std::cout << "Hook instalado com sucesso - CryptUnprotectData\n";
+        //std::cout << "Hook instalado com sucesso - CryptUnprotectData\n";
         ULONG ACLEntries[1] = { 0 };
         LhSetExclusiveACL(ACLEntries, 1, &hHook);
     }
@@ -286,10 +289,11 @@ void hookCryptGenKey(FARPROC addr) {
         &hHook);
 
     if (FAILED(result)) {
-        std::cout << "\nFalha ao instalar o hook - CryptGenKey\n";
+        //std::cout << "\nFalha ao instalar o hook - CryptGenKey\n";
+        TerminateProcess(GetCurrentProcess(), 0);
     }
     else {
-        std::cout << "Hook instalado com sucesso - CryptGenKey\n";
+        //std::cout << "Hook instalado com sucesso - CryptGenKey\n";
         ULONG ACLEntries[1] = { 0 };
         LhSetExclusiveACL(ACLEntries, 1, &hHook);
     }
@@ -305,10 +309,11 @@ void hookCryptExportKey(FARPROC addr) {
         &hHook);
 
     if (FAILED(result)) {
-        std::cout << "\nFalha ao instalar o hook - CryptExportKey\n";
+        //std::cout << "\nFalha ao instalar o hook - CryptExportKey\n";
+        TerminateProcess(GetCurrentProcess(), 0);
     }
     else {
-        std::cout << "Hook instalado com sucesso - CryptExportKey\n";
+        //std::cout << "Hook instalado com sucesso - CryptExportKey\n";
         ULONG ACLEntries[1] = { 0 };
         LhSetExclusiveACL(ACLEntries, 1, &hHook);
     }
@@ -316,16 +321,24 @@ void hookCryptExportKey(FARPROC addr) {
 
 void hookCrypto()
 {
-    std::cout << "Aqui pegou";
-
     FARPROC procAddress = GetProcAddress(GetModuleHandle(TEXT("crypt32")), "CryptUnprotectData");
-    hookCryptUnprotectData(procAddress);
+    if (procAddress != NULL && procAddress != 0)
+        hookCryptUnprotectData(procAddress);
+    
     procAddress = GetProcAddress(GetModuleHandle(TEXT("bcrypt")), "BCryptEncrypt");
-    hookBCryptEncrypt(procAddress);
+    if (procAddress != NULL && procAddress != 0)
+        hookBCryptEncrypt(procAddress);
+    
     procAddress = GetProcAddress(GetModuleHandle(TEXT("advapi32")), "CryptEncrypt");
-    hookCryptEncrypt(procAddress);
+    if (procAddress != NULL && procAddress != 0)
+        hookCryptEncrypt(procAddress);
+    
     procAddress = GetProcAddress(GetModuleHandle(TEXT("advapi32")), "CryptGenKey");
-    hookCryptGenKey(procAddress);
+    if (procAddress != NULL && procAddress != 0)
+        hookCryptGenKey(procAddress);
+    
     procAddress = GetProcAddress(GetModuleHandle(TEXT("advapi32")), "CryptExportKey");
-    hookCryptExportKey(procAddress);
+    
+    if (procAddress != NULL && procAddress != 0)
+        hookCryptExportKey(procAddress);
 }
