@@ -7,7 +7,7 @@
 int makehook(DWORD processId) {
 
 	WCHAR* dllToInject = L".\\Hooker.dll";
-	wprintf(L"Tentando injetar: %s\n\n", dllToInject);
+	//wprintf(L"Tentando injetar: %s\n\n", dllToInject);
 
 	// Injeta a dllToInject no processo alvo 
 	NTSTATUS nt = RhInjectLibrary(

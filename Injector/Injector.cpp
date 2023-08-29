@@ -69,8 +69,8 @@ int _tmain(int argc, _TCHAR* argv[]){
 
                 BOOL result = TerminateProcess(hPid, 0);
 
-                while (!result) {
-                    result = TerminateProcess(hPid, 0);
+                if (!result) {
+                    std::cout << "The one the got away (Tentando novamente)...\n";
                 }
 
                 CloseHandle(hPid);
