@@ -8,9 +8,49 @@
 #include <thread>
 #include <iostream>
 #include <algorithm>
+#include <vector> // Inclui os cabecalhos para a whitelist
+#include <tlhelp32.h> // Inclui os cabecalhos para a whitelist
+#include <psapi.h> // Inclui os cabecalhos para a whitelist
+#pragma comment(lib, "psapi.lib") // Inclui os cabecalhos para a whitelist
 
 #include <bcrypt.h> // Inclui os cabecalhos para as funcoes BCryptAPI
 #include <wincrypt.h> // Inclui os cabecalhos para as funcoes da CryptoAPI
+
+bool isOnWhitelist(DWORD processId) {
+    
+    std::vector<std::string> whitelist = {
+        "System",
+        "smss.exe",
+        "csrss.exe",
+        "wininit.exe",
+        "services.exe",
+        "lsass.exe",
+        "svchost.exe",
+        "explorer.exe",
+        "winlogon.exe",
+    };
+
+    
+    HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId);
+    if (hProcess == NULL) {
+        return false;
+    }
+
+    WCHAR processName[MAX_PATH];
+    if (GetModuleFileNameEx(hProcess, NULL, processName, sizeof(processName)) == 0) {
+        CloseHandle(hProcess);
+        return false;
+    }
+    CloseHandle(hProcess);
+
+    int bufferSize = WideCharToMultiByte(CP_ACP, 0, processName, -1, NULL, 0, NULL, NULL);
+    char* narrowString = new char[bufferSize];
+    WideCharToMultiByte(CP_ACP, 0, processName, -1, narrowString, bufferSize, NULL, NULL);
+    std::string processNameStr(narrowString);
+    delete[] narrowString;
+
+    return std::find(whitelist.begin(), whitelist.end(), processNameStr) != whitelist.end();
+}
 
 typedef BOOL(WINAPI* CryptEncrypt_t)(
     HCRYPTKEY   hKey,
@@ -34,9 +74,14 @@ BOOL WINAPI My_CryptEncrypt(
     DWORD       dwBufLen
 )
 {
-    std::cout << "O processo " << GetCurrentProcessId() << " chamou a CryptEncrypt!" << std::endl;
-    TerminateProcess(GetCurrentProcess(), 0);
+    if (!isOnWhitelist(GetCurrentProcessId())) 
+    {
+        std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar CryptEncrypt!" << std::endl;
+        SetLastError(ERROR_ACCESS_DENIED);
+        return FALSE;
+    }
 
+    std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou CryptEncrypt!" << std::endl;
     return original_CryptEncrypt(hKey, hHash, Final, dwFlags, pbData, pdwDataLen, dwBufLen);
 }
 
@@ -68,8 +113,14 @@ NTSTATUS NTAPI My_BCryptEncrypt(
     ULONG             dwFlags
 )
 {
-    std::cout << "O processo " << GetCurrentProcessId() << " chamou a BCryptEncrypt!" << std::endl;
-    TerminateProcess(GetCurrentProcess(), 0);
+    if (!isOnWhitelist(GetCurrentProcessId()))
+    {
+        std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar BCryptEncrypt!" << std::endl;
+        SetLastError(ERROR_ACCESS_DENIED);
+        return FALSE;
+    }
+
+    std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou BCryptEncrypt!" << std::endl;
     
     return original_BCryptEncrypt(hKey, pbInput, cbInput, pPaddingInfo, pbIV, cbIV, pbOutput, cbOutput, pcbResult, dwFlags);
 }
@@ -96,8 +147,14 @@ BOOL WINAPI My_CryptUnprotectData(
     DATA_BLOB* pDataOut
 )
 {
-    std::cout << "O processo " << GetCurrentProcessId() << " chamou a CryptUnprotectData!" << std::endl;
-    TerminateProcess(GetCurrentProcess(), 0);
+    if (!isOnWhitelist(GetCurrentProcessId()))
+    {
+        std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar CryptUnprotectData!" << std::endl;
+        SetLastError(ERROR_ACCESS_DENIED);
+        return FALSE;
+    }
+
+    std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou CryptUnprotectData!" << std::endl;
 
     return original_CryptUnprotectData(pDataIn, pszDataDescr, pOptionalEntropy, pvReserved, pPromptStruct, dwFlags, pDataOut);
 }
@@ -118,8 +175,14 @@ BOOL WINAPI My_CryptGenKey(
     HCRYPTKEY* phKey
 )
 {
-    std::cout << "O processo " << GetCurrentProcessId() << " chamou a CryptGenKey!" << std::endl;
-    TerminateProcess(GetCurrentProcess(), 0);
+    if (!isOnWhitelist(GetCurrentProcessId()))
+    {
+        std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar CryptGenKey!" << std::endl;
+        SetLastError(ERROR_ACCESS_DENIED);
+        return FALSE;
+    }
+
+    std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou CryptGenKey!" << std::endl;
 
     return original_CryptGenKey(hProv, Algid, dwFlags, phKey);
 }
@@ -144,8 +207,14 @@ BOOL WINAPI My_CryptExportKey(
     DWORD* pdwDataLen
 )
 {
-    std::cout << "O processo " << GetCurrentProcessId() << " chamou a CryptExportKey!" << std::endl;
-    TerminateProcess(GetCurrentProcess(), 0);
+    if (!isOnWhitelist(GetCurrentProcessId()))
+    {
+        std::cout << "O processo não confiável " << GetCurrentProcessId() << " tentou chamar CryptExportKey!" << std::endl;
+        SetLastError(ERROR_ACCESS_DENIED);
+        return FALSE;
+    }
+
+    std::cout << "O processo confiável " << GetCurrentProcessId() << " chamou CryptExportKey!" << std::endl;
 
     return original_CryptExportKey(hKey, hExpKey, dwBlobType, dwFlags, pbData, pdwDataLen);
 }
