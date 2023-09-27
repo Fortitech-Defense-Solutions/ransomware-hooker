@@ -10,6 +10,7 @@
 #include <thread>
 #include <iostream>
 #include <algorithm>
+#include <fstream>
 
 int _tmain(int argc, _TCHAR* argv[]){
     std::list<DWORD> currentProcesses;
@@ -92,6 +93,17 @@ int _tmain(int argc, _TCHAR* argv[]){
                             std::wcout << L"Executable Path: " << szEXEPath << std::endl;
 
                             HANDLE tPid = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+                            std::ofstream file("logs.txt", std::ios::app);
+
+                            // Convert szEXEPath to a narrow string
+                            int size_needed = WideCharToMultiByte(CP_UTF8, 0, szEXEPath, -1, NULL, 0, NULL, NULL);
+                            std::string szEXEPath_narrow(size_needed, 0);
+                            WideCharToMultiByte(CP_UTF8, 0, szEXEPath, -1, &szEXEPath_narrow[0], size_needed, NULL, NULL);
+
+                            file << "PID: " << std::to_string(pid) << " - Path: " << szEXEPath_narrow << "\n";
+                            file.close();
+
+
 
                             if (makehook(pid) != 1) {
 

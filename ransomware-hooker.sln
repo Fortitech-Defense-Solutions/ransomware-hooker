@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Injector", "Injector\Inject
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Eagle - Antiransomware", "Eagle - Antiransomware\Eagle - Antiransomware.vdproj", "{6452523B-A02F-48A1-A696-AB4906DCE9CE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Eagle-GUI", "Eagle-GUI\Eagle-GUI.vcxproj", "{C1412F95-E2FC-4F7C-9CE0-F1442991944B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -38,6 +40,14 @@ Global
 		{6452523B-A02F-48A1-A696-AB4906DCE9CE}.Debug|x64.Build.0 = Debug
 		{6452523B-A02F-48A1-A696-AB4906DCE9CE}.Release|Win32.ActiveCfg = Release
 		{6452523B-A02F-48A1-A696-AB4906DCE9CE}.Release|x64.ActiveCfg = Release
+		{C1412F95-E2FC-4F7C-9CE0-F1442991944B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C1412F95-E2FC-4F7C-9CE0-F1442991944B}.Debug|Win32.Build.0 = Debug|Win32
+		{C1412F95-E2FC-4F7C-9CE0-F1442991944B}.Debug|x64.ActiveCfg = Debug|x64
+		{C1412F95-E2FC-4F7C-9CE0-F1442991944B}.Debug|x64.Build.0 = Debug|x64
+		{C1412F95-E2FC-4F7C-9CE0-F1442991944B}.Release|Win32.ActiveCfg = Release|Win32
+		{C1412F95-E2FC-4F7C-9CE0-F1442991944B}.Release|Win32.Build.0 = Release|Win32
+		{C1412F95-E2FC-4F7C-9CE0-F1442991944B}.Release|x64.ActiveCfg = Release|x64
+		{C1412F95-E2FC-4F7C-9CE0-F1442991944B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
